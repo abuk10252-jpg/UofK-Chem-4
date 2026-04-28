@@ -9,7 +9,9 @@ workflows:
         PACKAGE_NAME: "com.abuk10252.uofkchem"
         EXPO_PUBLIC_API_URL: "https://uofk-chem-server.onrender.com/api"
         CI: "1"
-    
+      groups:
+        - android_credentials   # لازم تكون ضايف فيها keystore
+
     scripts:
       - name: Install dependencies
         script: |
@@ -45,7 +47,6 @@ workflows:
         signing:
           keystore_reference: "my-app-production-keystore"
 
-    publishing:
       email:
         recipients:
           - abuk10252@gmail.com
