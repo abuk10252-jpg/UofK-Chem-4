@@ -1,46 +1,51 @@
 workflows:
-  uofk_chem_android_release:
-    name: UofK Chem Android Release (Expo EAS APK)
-    max_build_duration: 60
-
+  react-native-android:
+    name: React Native Android Release Build
+    max_build_duration: 120
+    instance_type: mac_mini_m2
+    
     environment:
-      flutter: stable
-      node: 18
-      npm: 9
+      android_signing:
+        - my-app-production-keystore
       vars:
-        EXPO_PUBLIC_BACKEND_URL: "https://server-2-xpsh.onrender.com"
-      groups:
-        - expo_credentials
-
-    cache:
-      cache_paths:
-        - $HOME/.npm
-        - $HOME/.yarn
-        - $HOME/.cache/eas
-
+        PACKAGE_NAME: "com.abuk10252.uofkchem"
+        EXPO_PUBLIC_API_URL: "https://uofk-chem-server.onrender.com/api"
+        CI: "1"
+    
     scripts:
-      - name: Install Node dependencies
+      - name: Install dependencies
         script: |
-          npm install
-
-      - name: Install EAS CLI
+          npm install --legacy-peer-deps
+      
+      - name: Create .env file
         script: |
-          npm install -g eas-cli
-
-      - name: EAS Login
+          cat > .env << EOF
+          EXPO_PUBLIC_API_URL=https://uofk-chem-server.onrender.com/api
+          EOF
+      
+      - name: Expo Prebuild
         script: |
-          if [ -n "$EXPO_TOKEN" ]; then
-            eas login --token $EXPO_TOKEN
-          fi
-
-      - name: Run EAS Build (Android APK)
+          npx expo prebuild --platform android --clean
+      
+      - name: Configure Android Project
         script: |
-          eas build --platform android --profile production --non-interactive --output ./builds
-
+          echo "sdk.dir=$ANDROID_SDK_ROOT" > android/local.properties
+          cd android
+          chmod +x gradlew
+      
+      - name: Build Android RELEASE APK
+        script: |
+          cd android
+          ./gradlew clean
+          ./gradlew assembleRelease -PversionCode=$BUILD_NUMBER -PversionName=1.0.$BUILD_NUMBER
+    
     artifacts:
-      - builds/**/*.apk
-
+      - android/app/build/outputs/apk/release/*.apk
+    
     publishing:
-      android:
-        signing:
-          keystore_reference: "my-app-production-keystore"
+      email:
+        recipients:
+          - abuk10252@gmail.com
+        notify:
+          success: true
+          failure: true
