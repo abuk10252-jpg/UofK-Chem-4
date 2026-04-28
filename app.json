@@ -1,0 +1,52 @@
+{
+  "expo": {
+    "name": "UofK Chem",
+    "slug": "uofk-chem",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "uofkchem",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": false,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.abuk10252.uofkchem"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#002147"
+      },
+      "edgeToEdgeEnabled": true,
+      "package": "com.abuk10252.uofkchem"
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#002147"
+        }
+      ],
+      "expo-document-picker"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "owner": "abuk10252",
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "ca275e07-9272-47b3-b91e-ee8a62e9a560"
+      }
+    }
+  }
+}
