@@ -1,54 +1,51 @@
 workflows:
   react-native-android:
     name: React Native Android Release Build
-    max_build_duration: 125
+    max_build_duration: 120
     instance_type: mac_mini_m2
-
+    
     environment:
-      node: 18
-      npm: 9
+      android_signing:
+        - keystore_reference
       vars:
-        # رابط السيرفر بتاع التطبيق
-        EXPO_PUBLIC_BACKEND_URL: "https://server-2-xpsh.onrender.com"
-
-    android_signing:
-      keystore_reference: "my-app-production-keystore"  # نفس الاسم العملتو في Codemagic
-
+        PACKAGE_NAME: "com.abuk10252.uofkchem"
+        EXPO_PUBLIC_API_URL: "https://uofk-chem-server.onrender.com/api"
+        CI: "1"
+    
     scripts:
-      - name: Show Node & npm version
-        script: |
-          node -v
-          npm -v
-
       - name: Install dependencies
         script: |
-          npm install
-
-      # تسجيل الدخ��ل لـ Expo (اختياري)
-      - name: (Optional) Login to Expo
+          npm install --legacy-peer-deps
+      
+      - name: Create .env file
         script: |
-          if [ -n "$EXPO_USERNAME" ] && [ -n "$EXPO_PASSWORD" ]; then
-            npx expo login --username "$EXPO_USERNAME" --password "$EXPO_PASSWORD"
-          else
-            echo "EXPO_USERNAME or EXPO_PASSWORD not set, skipping expo login."
-          fi
-
-      - name: Install EAS CLI
+          cat > .env << EOF
+          EXPO_PUBLIC_API_URL=https://server-2-xpsh.onrender.com/api
+          EOF
+      
+      - name: Expo Prebuild
         script: |
-          npm install -g eas-cli
-
-      # بناء APK بنسخة Release باستخدام profile اسمه production
-      - name: EAS build Android Release APK
+          npx expo prebuild --platform android --clean
+      
+      - name: Configure Android Project
         script: |
-          eas build -p android --profile production --non-interactive
-
+          echo "sdk.dir=$ANDROID_SDK_ROOT" > android/local.properties
+          cd android
+          chmod +x gradlew
+      
+      - name: Build Android RELEASE APK
+        script: |
+          cd android
+          ./gradlew clean
+          ./gradlew assembleRelease -PversionCode=$BUILD_NUMBER -PversionName=1.0.$BUILD_NUMBER
+    
     artifacts:
-      - "**/*.apk"
-      - "**/build/**/*.apk"
-
+      - android/app/build/outputs/apk/release/*.apk
+    
     publishing:
       email:
         recipients:
-          - "abuk10252@gmail.com"
-        subject: "UofK Chem Android Release APK build"
-        
+          - abuk10252@gmail.com
+        notify:
+          success: true
+          failure: true
