@@ -5,8 +5,6 @@ workflows:
     instance_type: mac_mini_m2
     
     environment:
-      android_signing:
-        my-app-production-keystore
       vars:
         PACKAGE_NAME: "com.abuk10252.uofkchem"
         EXPO_PUBLIC_API_URL: "https://uofk-chem-server.onrender.com/api"
@@ -42,6 +40,11 @@ workflows:
     artifacts:
       - android/app/build/outputs/apk/release/*.apk
     
+    publishing:
+      android:
+        signing:
+          keystore_reference: "my-app-production-keystore"
+
     publishing:
       email:
         recipients:
