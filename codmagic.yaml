@@ -1,7 +1,8 @@
 workflows:
-  uofk_chem_android_release:
-    name: UofK Chem Android Release APK
-    max_build_duration: 60
+  react-native-android:
+    name: React Native Android Release Build
+    max_build_duration: 125
+    instance_type: mac_mini_m2
 
     environment:
       node: 18
