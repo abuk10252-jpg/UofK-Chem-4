@@ -1,0 +1,49 @@
+workflows:
+  uofk_chem_android_release:
+    name: UofK Chem Android Release APK
+    max_build_duration: 60
+
+    environment:
+      node: 18
+      npm: 9
+      vars:
+        # رابط السيرفر بتاع التطبيق
+        EXPO_PUBLIC_BACKEND_URL: "https://server-2-xpsh.onrender.com"
+
+    scripts:
+      - name: Show Node & npm version
+        script: |
+          node -v
+          npm -v
+
+      - name: Install dependencies
+        script: |
+          npm install
+
+      # تسجيل الدخول لـ Expo (اختياري)
+      - name: (Optional) Login to Expo
+        script: |
+          if [ -n "$EXPO_USERNAME" ] && [ -n "$EXPO_PASSWORD" ]; then
+            npx expo login --username "$EXPO_USERNAME" --password "$EXPO_PASSWORD"
+          else
+            echo "EXPO_USERNAME or EXPO_PASSWORD not set, skipping expo login."
+          fi
+
+      - name: Install EAS CLI
+        script: |
+          npm install -g eas-cli
+
+      # بناء APK بنسخة Release باستخدام profile اسمه production
+      - name: EAS build Android Release APK
+        script: |
+          eas build -p android --profile production --non-interactive
+
+    artifacts:
+      - "**/*.apk"
+      - "**/build/**/*.apk"
+
+    publishing:
+      email:
+        recipients:
+          - "abuk10252@gmail.com"
+        subject: "UofK Chem Android Release APK build"
