@@ -2,6 +2,7 @@ workflows:
   uofk_chem_android_release:
     name: UofK Chem Android Release (Expo EAS APK)
     max_build_duration: 60
+
     environment:
       flutter: stable
       node: 18
@@ -26,7 +27,7 @@ workflows:
         script: |
           npm install -g eas-cli
 
-      - name: EAS Login (optional لو ما بتستخدم حساب Expo تقدر تشيل الخطوة دي)
+      - name: EAS Login
         script: |
           if [ -n "$EXPO_TOKEN" ]; then
             eas login --token $EXPO_TOKEN
@@ -39,5 +40,7 @@ workflows:
     artifacts:
       - builds/**/*.apk
 
-    android_signing:
-      keystore_reference: "my-app-production-keystore"
+    publishing:
+      android:
+        signing:
+          keystore_reference: "my-app-production-keystore"
