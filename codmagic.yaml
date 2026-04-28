@@ -10,6 +10,9 @@ workflows:
         # رابط السيرفر بتاع التطبيق
         EXPO_PUBLIC_BACKEND_URL: "https://server-2-xpsh.onrender.com"
 
+    android_signing:
+      keystore_reference: "my-app-production-keystore"  # نفس الاسم العملتو في Codemagic
+
     scripts:
       - name: Show Node & npm version
         script: |
@@ -20,7 +23,7 @@ workflows:
         script: |
           npm install
 
-      # تسجيل الدخول لـ Expo (اختياري)
+      # تسجيل الدخ��ل لـ Expo (اختياري)
       - name: (Optional) Login to Expo
         script: |
           if [ -n "$EXPO_USERNAME" ] && [ -n "$EXPO_PASSWORD" ]; then
@@ -47,3 +50,4 @@ workflows:
         recipients:
           - "abuk10252@gmail.com"
         subject: "UofK Chem Android Release APK build"
+        
