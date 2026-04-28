@@ -38,7 +38,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const token = await AsyncStorage.getItem('token');
       if (token) {
-        const data = await apiCall('/api/auth/me');
+        // كان /api/auth/me → شلنا /api
+        const data = await apiCall('/auth/me');
         setUser(data.user);
       }
     } catch {
@@ -49,10 +50,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   async function login(email: string, password: string): Promise<User> {
-    const data = await apiCall('/api/auth/login', {
+    // كان /api/auth/login → شلنا /api
+    const data = await apiCall('/auth/login', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     });
+
     await AsyncStorage.setItem('token', data.token);
     if (data.refresh_token) {
       await AsyncStorage.setItem('refresh_token', data.refresh_token);
@@ -62,10 +65,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   async function register(regData: { email: string; university_id: string; name: string; password: string }): Promise<User> {
-    const data = await apiCall('/api/auth/register', {
+    // كان /api/auth/register → شلنا /api
+    const data = await apiCall('/auth/register', {
       method: 'POST',
       body: JSON.stringify(regData),
     });
+
     await AsyncStorage.setItem('token', data.token);
     if (data.refresh_token) {
       await AsyncStorage.setItem('refresh_token', data.refresh_token);
@@ -82,7 +87,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   async function refreshUser() {
     try {
-      const data = await apiCall('/api/auth/me');
+      // كان /api/auth/me → شلنا /api
+      const data = await apiCall('/auth/me');
       setUser(data.user);
     } catch {}
   }
