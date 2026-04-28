@@ -6,7 +6,7 @@ workflows:
     
     environment:
       android_signing:
-        - my-app-production-keystore
+        my-app-production-keystore
       vars:
         PACKAGE_NAME: "com.abuk10252.uofkchem"
         EXPO_PUBLIC_API_URL: "https://uofk-chem-server.onrender.com/api"
