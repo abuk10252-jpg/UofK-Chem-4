@@ -10,7 +10,7 @@ workflows:
         EXPO_PUBLIC_API_URL: "https://uofk-chem-server.onrender.com/api"
         CI: "1"
       groups:
-        - android_credentials   # لازم تكون ضايف فيها keystore
+        - android_credentials   # هنا التوقيع الصحيح
 
     scripts:
       - name: Install dependencies
@@ -43,10 +43,6 @@ workflows:
       - android/app/build/outputs/apk/release/*.apk
     
     publishing:
-      android:
-        signing:
-          keystore_reference: "my-app-production-keystore"
-
       email:
         recipients:
           - abuk10252@gmail.com
