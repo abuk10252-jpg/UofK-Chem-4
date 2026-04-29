@@ -800,3 +800,398 @@ if (loading)
     </View>
   );
 }
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: Colors.background },
+
+  center: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: Colors.background
+  },
+
+  listContent: { padding: 16, paddingBottom: 32 },
+
+  createBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.accent,
+    paddingHorizontal: 18,
+    paddingVertical: 14,
+    borderRadius: 14,
+    marginBottom: 18,
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2
+  },
+
+  createBtnText: { color: '#FFF', fontWeight: '700', fontSize: 15 },
+
+  newsCard: {
+    backgroundColor: '#FFF',
+    borderRadius: 18,
+    padding: 20,
+    marginBottom: 18,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.06)'
+  },
+
+  newsHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12
+  },
+
+  typeBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+    gap: 4
+  },
+
+  typeText: { fontSize: 11, fontWeight: '700', letterSpacing: 0.5 },
+
+  headerRight: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+
+  newsDate: { fontSize: 12, color: Colors.textSecondary },
+
+  adminBtns: { flexDirection: 'row', gap: 10 },
+
+  newsTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: Colors.textPrimary,
+    marginBottom: 8,
+    lineHeight: 26
+  },
+
+  newsContent: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+    lineHeight: 22,
+    marginBottom: 12
+  },
+
+  reactionsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    marginBottom: 8,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: Colors.border
+  },
+
+  reactionChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 22,
+    backgroundColor: '#F7F7F7',
+    gap: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.05)'
+  },
+
+  reactionActive: {
+    backgroundColor: 'rgba(212,175,55,0.1)',
+    borderColor: Colors.accent
+  },
+
+  emojiText: { fontSize: 16 },
+
+  reactionCount: {
+    fontSize: 13,
+    color: Colors.textSecondary,
+    fontWeight: '600'
+  },
+
+  addReactionBtn: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: Colors.background,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: Colors.border
+  },
+
+  emojiPicker: { marginBottom: 10, marginTop: 4 },
+
+  emojiPickerContent: { gap: 4, paddingVertical: 6 },
+
+  emojiBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: Colors.background
+  },
+
+  emojiBtnActive: {
+    backgroundColor: 'rgba(212,175,55,0.2)',
+    borderWidth: 2,
+    borderColor: Colors.accent
+  },
+
+  emojiBtnText: { fontSize: 22 },
+
+  pollWrap: { marginBottom: 12 },
+
+  pollOption: {
+    position: 'relative',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: Colors.background,
+    borderRadius: 10,
+    padding: 14,
+    marginBottom: 8,
+    overflow: 'hidden'
+  },
+
+  pollBar: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(212,175,55,0.15)',
+    borderRadius: 10
+  },
+
+  pollText: {
+    fontSize: 14,
+    color: Colors.textPrimary,
+    fontWeight: '500',
+    zIndex: 1,
+    flex: 1
+  },
+
+  pollPct: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: Colors.accent,
+    zIndex: 1,
+    marginLeft: 8
+  },
+
+  pollTotal: {
+    fontSize: 12,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    marginTop: 4
+  },
+
+  quizWrap: {
+    marginBottom: 12,
+    backgroundColor: Colors.background,
+    borderRadius: 14,
+    padding: 14
+  },
+
+  quizHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
+
+  quizTime: { fontSize: 13, color: Colors.warning, fontWeight: '600' },
+
+  questionWrap: { marginBottom: 16 },
+
+  questionText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: Colors.textPrimary,
+    marginBottom: 8
+  },
+
+  optionBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFF',
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 6,
+    gap: 10,
+    borderWidth: 1,
+    borderColor: Colors.border
+  },
+
+  optionSelected: {
+    borderColor: Colors.primary,
+    backgroundColor: 'rgba(0,33,71,0.04)'
+  },
+
+  optionRadio: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: Colors.border
+  },
+
+  optionRadioSelected: {
+    borderColor: Colors.primary,
+    backgroundColor: Colors.primary
+  },
+
+  optionText: { fontSize: 14, color: Colors.textPrimary, flex: 1 },
+
+  submitQuizBtn: {
+    backgroundColor: Colors.accent,
+    borderRadius: 12,
+    paddingVertical: 14,
+    alignItems: 'center',
+    marginTop: 4
+  },
+
+  submitQuizText: { color: '#FFF', fontSize: 16, fontWeight: '700' },
+
+  quizResult: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: Colors.success + '10',
+    padding: 14,
+    borderRadius: 12,
+    marginBottom: 12
+  },
+
+  quizScore: { fontSize: 16, fontWeight: '700', color: Colors.success },
+
+  quizAdminRow: { flexDirection: 'row', gap: 8, marginBottom: 8 },
+
+  quizAdminBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    backgroundColor: Colors.background,
+    gap: 4
+  },
+
+  quizAdminText: { fontSize: 13, fontWeight: '600', color: Colors.primary },
+
+  commentSection: { marginTop: 4 },
+
+  commentItem: { flexDirection: 'row', gap: 6, marginBottom: 6 },
+
+  commentName: { fontSize: 13, fontWeight: '700', color: Colors.primary },
+
+  commentText: { fontSize: 13, color: Colors.textPrimary, flex: 1 },
+
+  moreComments: {
+    fontSize: 12,
+    color: Colors.accent,
+    fontWeight: '600',
+    marginBottom: 8
+  },
+
+  commentInput: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F9F9F9',
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    height: 46,
+    marginTop: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.08)'
+  },
+
+  commentField: { flex: 1, fontSize: 14, color: Colors.textPrimary },
+
+  sendBtn: { padding: 6 },
+
+  emptyText: {
+    fontSize: 15,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    marginTop: 20
+  },
+
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    padding: 24
+  },
+
+  modalContent: {
+    backgroundColor: '#FFF',
+    borderRadius: 20,
+    padding: 24
+  },
+
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: Colors.textPrimary,
+    marginBottom: 16
+  },
+
+  modalInput: {
+    backgroundColor: Colors.background,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderRadius: 12,
+    padding: 14,
+    fontSize: 15,
+    color: Colors.textPrimary,
+    marginBottom: 12,
+    textAlignVertical: 'top'
+  },
+
+  modalBtns: { flexDirection: 'row', gap: 12, marginTop: 8 },
+
+  cancelBtn: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    alignItems: 'center'
+  },
+
+  cancelText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: Colors.textSecondary
+  },
+
+  saveBtn: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 12,
+    backgroundColor: Colors.primary,
+    alignItems: 'center',
+    marginTop: 8
+  },
+
+  saveText: { fontSize: 15, fontWeight: '700', color: '#FFF' },
+
+  resultRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border
+  },
+
+  resultName: { fontSize: 15, fontWeight: '500', color: Colors.textPrimary },
+
+  resultScore: { fontSize: 15, fontWeight: '700' }
+});
