@@ -1,5 +1,5 @@
 workflows:
-  android-release:
+  react-native-android: # غيرنا الاسم هنا عشان يطابق اللي السيستم بيدور عليه
     name: Android APK Build
     instance_type: linux_x2
     triggering:
