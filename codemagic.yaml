@@ -1,51 +1,44 @@
 workflows:
-  react-native-android:
-    name: React Native Android Release Build
-    max_build_duration: 120
-    instance_type: mac_mini_m2
-    
+  android-release:
+    name: Android APK Build
+    instance_type: linux_x2
+    triggering:
+      events:
+        - push
+      branch:
+        include_patterns:
+          - main
     environment:
       vars:
-        PACKAGE_NAME: "com.abuk10252.uofkchem"
-        EXPO_PUBLIC_API_URL: "https://uofk-chem-server.onrender.com/api"
-        CI: "1"
-      groups:
-        - android_credentials   # هنا التوقيع الصحيح
-
+        APP_NAME: "UofK Chem"
+        PACKAGE_NAME: "com.uofkchem.app"
+        SERVER_URL: "https://server-2-xpsh.onrender.com"
     scripts:
-      - name: Install dependencies
+      - name: Initialize React Native Project
         script: |
-          npm install --legacy-peer-deps
-      
-      - name: Create .env file
+          npx react-native init UofKChem --skip-install
+          cd UofKChem
+          npm install
+          cd ..
+      - name: Setup Android Build
         script: |
-          cat > .env << EOF
-          EXPO_PUBLIC_API_URL=https://uofk-chem-server.onrender.com/api
-          EOF
-      
-      - name: Expo Prebuild
-        script: |
-          npx expo prebuild --platform android --clean
-      
-      - name: Configure Android Project
-        script: |
-          echo "sdk.dir=$ANDROID_SDK_ROOT" > android/local.properties
-          cd android
+          cd UofKChem/android
           chmod +x gradlew
-      
-      - name: Build Android RELEASE APK
+          ./gradlew wrapper --gradle-version 8.2.1
+          cd ../..
+      - name: Build APK
         script: |
-          cd android
-          ./gradlew clean
-          ./gradlew assembleRelease -PversionCode=$BUILD_NUMBER -PversionName=1.0.$BUILD_NUMBER
-    
+          cd UofKChem/android
+          ./gradlew clean assembleRelease
+          cd ../..
+      - name: Copy APK
+        script: |
+          mkdir -p build_output
+          find UofKChem/android -name "*.apk" -type f -exec cp {} build_output/ \;
     artifacts:
-      - android/app/build/outputs/apk/release/*.apk
-    
+      - build_output/**
     publishing:
       email:
         recipients:
           - abuk10252@gmail.com
-        notify:
-          success: true
-          failure: true
+          
