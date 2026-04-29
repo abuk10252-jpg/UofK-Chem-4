@@ -70,7 +70,8 @@ export default function NewsTab() {
     fetchNews();
   }, []);
 
-  async function handleReact(newsId: string, emoji: string) {
+
+async function handleReact(newsId: string, emoji: string) {
     try {
       const data = await apiCall(`/api/news/${newsId}/react`, {
         method: 'POST',
@@ -134,112 +135,7 @@ export default function NewsTab() {
     }
   }
 
-  async function handleSubmitQuiz(newsId: string) {
-    const answers = quizAnswers[newsId] || [];
-    setSubmitting(newsId);
-
-    try {
-      const data = await apiCall(`/api/news/${newsId}/submit-quiz`, {
-        method: 'POST',
-        body: JSON.stringify({ answers })
-      });
-
-      setNews(prev =>
-        prev.map(n =>
-          n.id === newsId
-            ? { ...n, quiz_submissions: [...(n.quiz_submissions || []), data.submission] }
-            : n
-        )
-      );
-
-      Alert.alert(
-        'Quiz Submitted',
-        `Score: ${data.submission.score}% (${data.submission.correct_count}/${data.submission.total})`
-      );
-    } catch (e: any) {
-      Alert.alert('Error', e.message);
-    } finally {
-      setSubmitting('');
-    }
-  }
-
-  async function handleDeleteNews(newsId: string) {
-    Alert.alert('Delete', 'Delete this post?', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Delete',
-        style: 'destructive',
-        onPress: async () => {
-          try {
-            await apiCall(`/api/news/${newsId}`, { method: 'DELETE' });
-            setNews(prev => prev.filter(n => n.id !== newsId));
-          } catch (e) {
-            console.log(e);
-          }
-        }
-      }
-    ]);
-  }
-
-  async function handleSaveEdit() {
-    if (!editItem) return;
-
-    try {
-      const data = await apiCall(`/api/news/${editItem.id}`, {
-        method: 'PUT',
-        body: JSON.stringify({
-          title: editTitle,
-          title_ar: editTitle,
-          content: editContent,
-          content_ar: editContent
-        })
-      });
-
-      setNews(prev =>
-        prev.map(n =>
-          n.id === editItem.id ? { ...n, ...data.news } : n
-        )
-      );
-
-      setEditModal(false);
-    } catch (e: any) {
-      Alert.alert('Error', e.message);
-    }
-  }
-
-  async function handleViewQuizResults(newsId: string) {
-    try {
-      const data = await apiCall(`/api/news/${newsId}/quiz-results`);
-      setQuizResultsModal(data);
-    } catch (e) {
-      console.log(e);
-    }
-  }
-
-  async function handlePublishResults(newsId: string) {
-    try {
-      const data = await apiCall(`/api/news/${newsId}/publish-results`, {
-        method: 'POST'
-      });
-
-      setNews(prev =>
-        prev.map(n =>
-          n.id === newsId
-            ? { ...n, quiz_results_published: data.published }
-            : n
-        )
-      );
-
-      Alert.alert(
-        'Success',
-        data.published ? 'Results published' : 'Results hidden'
-      );
-    } catch (e) {
-      console.log(e);
-    }
-  }
-
-function renderReactions(item: NewsItem) {
+ function renderReactions(item: NewsItem) {
     const myReaction = item.user_reactions?.[user?.id || ''];
     const reactionEntries = Object.entries(item.reactions || {})
       .filter(([, v]) => v > 0)
@@ -452,10 +348,10 @@ function renderReactions(item: NewsItem) {
     );
   }
 
-  function renderNewsItem({ item }: { item: NewsItem }) {
+
+ function renderNewsItem({ item }: { item: NewsItem }) {
     const title = lang === 'ar' ? item.title_ar : item.title;
-    const content =
-      lang === 'ar' ? item.content_ar : item.content;
+    const content = lang === 'ar' ? item.content_ar : item.content;
 
     const typeIcon =
       item.type === 'poll'
@@ -653,7 +549,7 @@ function renderReactions(item: NewsItem) {
     );
   }
 
-if (loading)
+  if (loading)
     return (
       <View style={styles.center}>
         <ActivityIndicator size="large" color={Colors.accent} />
@@ -800,6 +696,7 @@ if (loading)
     </View>
   );
 }
+
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
 
@@ -1113,85 +1010,4 @@ const styles = StyleSheet.create({
 
   commentField: { flex: 1, fontSize: 14, color: Colors.textPrimary },
 
-  sendBtn: { padding: 6 },
-
-  emptyText: {
-    fontSize: 15,
-    color: Colors.textSecondary,
-    textAlign: 'center',
-    marginTop: 20
-  },
-
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    padding: 24
-  },
-
-  modalContent: {
-    backgroundColor: '#FFF',
-    borderRadius: 20,
-    padding: 24
-  },
-
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: Colors.textPrimary,
-    marginBottom: 16
-  },
-
-  modalInput: {
-    backgroundColor: Colors.background,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    borderRadius: 12,
-    padding: 14,
-    fontSize: 15,
-    color: Colors.textPrimary,
-    marginBottom: 12,
-    textAlignVertical: 'top'
-  },
-
-  modalBtns: { flexDirection: 'row', gap: 12, marginTop: 8 },
-
-  cancelBtn: {
-    flex: 1,
-    paddingVertical: 14,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    alignItems: 'center'
-  },
-
-  cancelText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: Colors.textSecondary
-  },
-
-  saveBtn: {
-    flex: 1,
-    paddingVertical: 14,
-    borderRadius: 12,
-    backgroundColor: Colors.primary,
-    alignItems: 'center',
-    marginTop: 8
-  },
-
-  saveText: { fontSize: 15, fontWeight: '700', color: '#FFF' },
-
-  resultRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.border
-  },
-
-  resultName: { fontSize: 15, fontWeight: '500', color: Colors.textPrimary },
-
-  resultScore: { fontSize: 15, fontWeight: '700' }
-});
+  sendBtn:               
