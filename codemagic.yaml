@@ -5,9 +5,10 @@ workflows:
     triggering:
       events:
         - push
-      branch_filter:
-        include_patterns:
-          - main
+        when:
+      branch: main
+        
+    
     environment:
       vars:
         APP_NAME: "UofK Chem"
