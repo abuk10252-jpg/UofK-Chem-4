@@ -11,18 +11,27 @@ export default function Index() {
     if (!loading) {
       if (!user) {
         router.replace('/login');
-      } else if (user.status === 'pending') {
+      } 
+      else if (user.status === 'pending') {
         router.replace('/pending');
-      } else if (user.status === 'rejected') {
+      } 
+      else if (user.status === 'rejected') {
         router.replace('/login');
-      } else {
+      } 
+      else if (user.role === 'super_admin') {
+        router.replace('/super-admin');
+      }
+      else if (user.role === 'admin') {
+        router.replace('/admin');
+      }
+      else {
         router.replace('/(tabs)/academic');
       }
     }
   }, [user, loading]);
 
   return (
-    <View style={styles.container} testID="index-loading">
+    <View style={styles.container}>
       <ActivityIndicator size="large" color="#D4AF37" />
     </View>
   );
