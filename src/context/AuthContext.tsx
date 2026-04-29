@@ -33,39 +33,57 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    checkAuth();
+    loadStoredUser();
   }, []);
 
-  async function checkAuth() {
+  // 🔥 تحميل المستخدم من التخزين (Offline Mode)
+  async function loadStoredUser() {
     try {
-      const token = await AsyncStorage.getItem('token');
-      if (token) {
-        const data = await apiCall('/auth/me');
-        setUser(data.user);
+      const savedUser = await AsyncStorage.getItem("user");
+      const savedToken = await AsyncStorage.getItem("token");
+
+      if (savedUser && savedToken) {
+        setUser(JSON.parse(savedUser)); // تشغيل التطبيق بدون نت
       }
-    } catch {
-      await AsyncStorage.removeItem('token');
+
+      // محاولة تحديث البيانات لو في نت
+      try {
+        const data = await apiCall("/auth/me");
+        if (data?.user) {
+          setUser(data.user);
+          await AsyncStorage.setItem("user", JSON.stringify(data.user));
+        }
+      } catch {
+        // Offline → تجاهل
+      }
+
     } finally {
       setLoading(false);
     }
   }
 
+  // 🔥 تسجيل الدخول
   async function login(email: string, password: string): Promise<User> {
     const cred = await signInWithEmailAndPassword(auth, email, password);
     const idToken = await cred.user.getIdToken(true);
 
-    await AsyncStorage.setItem('token', idToken);
+    await AsyncStorage.setItem("token", idToken);
 
     const data = await apiCall('/auth/me');
     setUser(data.user);
+
+    // تخزين المستخدم للأوفلاين
+    await AsyncStorage.setItem("user", JSON.stringify(data.user));
+
     return data.user;
   }
 
+  // 🔥 تسجيل حساب جديد
   async function register(regData: { email: string; university_id: string; name: string; password: string }): Promise<User> {
     const cred = await createUserWithEmailAndPassword(auth, regData.email, regData.password);
     const idToken = await cred.user.getIdToken(true);
 
-    await AsyncStorage.setItem('token', idToken);
+    await AsyncStorage.setItem("token", idToken);
 
     const data = await apiCall('/auth/register', {
       method: 'POST',
@@ -73,19 +91,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     setUser(data.user);
+
+    // تخزين المستخدم للأوفلاين
+    await AsyncStorage.setItem("user", JSON.stringify(data.user));
+
     return data.user;
   }
 
+  // 🔥 تسجيل الخروج
   async function logout() {
-    await AsyncStorage.removeItem('token');
-    await AsyncStorage.removeItem('refresh_token');
+    await AsyncStorage.removeItem("token");
+    await AsyncStorage.removeItem("user");
     setUser(null);
   }
 
+  // 🔥 تحديث بيانات المستخدم
   async function refreshUser() {
     try {
       const data = await apiCall('/auth/me');
-      setUser(data.user);
+      if (data?.user) {
+        setUser(data.user);
+        await AsyncStorage.setItem("user", JSON.stringify(data.user));
+      }
     } catch {}
   }
 
