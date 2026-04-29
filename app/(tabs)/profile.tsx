@@ -1,6 +1,6 @@
 // نفس الاستيرادات الأصلية
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, FlatList, ActivityIndicator, Linking } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator, Linking } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../src/context/AuthContext';
@@ -9,17 +9,17 @@ import { apiCall } from '../../src/utils/api';
 import { t } from '../../src/utils/i18n';
 
 export default function ProfileTab() {
-  const { user, logout, setUser } = useAuth();
+  const { user, logout } = useAuth();
   const router = useRouter();
   const lang = user?.language || 'en';
   const isAdmin = user?.role === 'admin' || user?.role === 'superadmin';
 
+  // 🔥 الإشعارات
   const [notifications, setNotifications] = useState([]);
-  const [unread, setUnread] = useState(0);
-  const [showNotifs, setShowNotifs] = useState(false);
+  const [loadingNoti, setLoadingNoti] = useState(true);
 
+  // 🔥 الكورسات
   const [courses, setCourses] = useState([]);
-  const [showSubs, setShowSubs] = useState(false);
 
   // 🔥 قسم الكويزات
   const [quizzes, setQuizzes] = useState([]);
@@ -31,14 +31,19 @@ export default function ProfileTab() {
     if (isAdmin) fetchMyQuizzes();
   }, []);
 
+  // 🔥 جلب الإشعارات
   async function fetchNotifications() {
     try {
       const data = await apiCall('/api/notifications');
-      setNotifications(data.notifications);
-      setUnread(data.unread_count);
-    } catch {}
+      setNotifications(data.notifications || []);
+    } catch (e) {
+      console.log(e);
+    } finally {
+      setLoadingNoti(false);
+    }
   }
 
+  // 🔥 جلب الكورسات
   async function fetchCourses() {
     try {
       const data = await apiCall('/api/courses/');
@@ -98,11 +103,45 @@ export default function ProfileTab() {
         </View>
       </View>
 
+      {/* 🔥 قسم الإشعارات */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Notifications</Text>
+
+        {loadingNoti ? (
+          <ActivityIndicator size="large" color={Colors.accent} />
+        ) : notifications.length === 0 ? (
+          <Text style={styles.emptyText}>No notifications</Text>
+        ) : (
+          notifications.map((n, i) => (
+            <View key={i} style={styles.notifCard}>
+              <Ionicons
+                name={
+                  n.file_type === 'pdf'
+                    ? 'document-text'
+                    : n.file_type === 'mp4'
+                    ? 'videocam'
+                    : 'document'
+                }
+                size={22}
+                color={Colors.accent}
+              />
+
+              <View style={{ flex: 1 }}>
+                <Text style={styles.notifTitle}>{n.title}</Text>
+                <Text style={styles.notifBody}>{n.body}</Text>
+                <Text style={styles.notifTime}>
+                  {new Date(n.created_at).toLocaleString()}
+                </Text>
+              </View>
+            </View>
+          ))
+        )}
+      </View>
+
       {/* الإعدادات */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>{t('settings', lang)}</Text>
-
-        {/* ... نفس الإعدادات الأصلية بدون تغيير ... */}
+        {/* ... نفس الإعدادات الأصلية ... */}
       </View>
 
       {/* لوحة الأدمن */}
@@ -130,7 +169,7 @@ export default function ProfileTab() {
         </View>
       )}
 
-      {/* 🔥 قسم الكويزات الجديد */}
+      {/* 🔥 قسم الكويزات */}
       {isAdmin && (
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>My Quizzes</Text>
@@ -175,12 +214,89 @@ export default function ProfileTab() {
   );
 }
 
-// نفس الستايلات الأصلية + إضافة بسيطة لستايل الكويزات
+// 🔥 الستايلات
 const styles = StyleSheet.create({
-  ... // (نفس الستايلات الأصلية)
+  container: { flex: 1, backgroundColor: '#F8F8F8' },
+  content: { padding: 16 },
+
+  profileCard: {
+    backgroundColor: '#FFF',
+    padding: 16,
+    borderRadius: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+
+  avatar: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#EEE',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 14,
+  },
+
+  profileInfo: { flex: 1 },
+  profileName: { fontSize: 18, fontWeight: '700', color: Colors.textPrimary },
+  profileEmail: { fontSize: 14, color: Colors.textSecondary },
+
+  roleBadge: {
+    marginTop: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+    alignSelf: 'flex-start',
+  },
+
+  roleText: { fontSize: 12, fontWeight: '700' },
+
+  section: { marginBottom: 25 },
+  sectionTitle: { fontSize: 18, fontWeight: '700', marginBottom: 12 },
+
+  emptyText: { color: Colors.textSecondary, fontSize: 14 },
+
+  // 🔥 الإشعارات
+  notifCard: {
+    backgroundColor: '#FFF',
+    padding: 12,
+    borderRadius: 10,
+    marginBottom: 10,
+    flexDirection: 'row',
+    gap: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.08)',
+  },
+
+  notifTitle: { fontSize: 14, fontWeight: '700', color: Colors.textPrimary },
+  notifBody: { fontSize: 13, color: Colors.textSecondary },
+  notifTime: { fontSize: 11, color: '#999', marginTop: 4 },
+
+  // 🔥 الكويزات
   quizCard: { backgroundColor: '#FFF', padding: 16, borderRadius: 12, marginBottom: 12 },
   quizTitle: { fontSize: 15, fontWeight: '700', color: Colors.textPrimary },
   quizRow: { flexDirection: 'row', marginTop: 10, gap: 10 },
-  quizBtn: { flex: 1, backgroundColor: Colors.accent, paddingVertical: 10, borderRadius: 10, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 6 },
+  quizBtn: {
+    flex: 1,
+    backgroundColor: Colors.accent,
+    paddingVertical: 10,
+    borderRadius: 10,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 6,
+  },
   quizBtnText: { color: '#FFF', fontWeight: '700' },
+
+  logoutBtn: {
+    backgroundColor: Colors.accent,
+    paddingVertical: 12,
+    borderRadius: 12,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 6,
+  },
+  logoutText: { color: '#FFF', fontSize: 16, fontWeight: '700' },
 });
