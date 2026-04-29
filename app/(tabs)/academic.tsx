@@ -404,4 +404,10 @@ const styles = StyleSheet.create({
   modalBtns: { flexDirection: 'row', gap: 12, marginTop: 8 },
   cancelBtn: { flex: 1, paddingVertical: 14, borderRadius: 12, borderWidth: 1, borderColor: Colors.border, alignItems: 'center' },
   cancelText: { fontSize: 15, fontWeight: '600', color: Colors.textSecondary },
-  saveBtn: {
+  saveBtn: { 
+  flex: 1,
+  paddingVertical: 14,
+  borderRadius: 12,
+  backgroundColor: Colors.primary,
+  alignItems: 'center',
+},
