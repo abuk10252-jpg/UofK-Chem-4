@@ -1,7 +1,7 @@
 workflows:
   react-native-android: # غيرنا الاسم هنا عشان يطابق اللي السيستم بيدور عليه
     name: Android APK Build
-    instance_type: linux
+    instance_type: mac_mini_m2
     triggering:
       events:
         - push
