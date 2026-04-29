@@ -1,6 +1,8 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { apiCall } from '../utils/api';
+import { auth } from '../firebase';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 
 export interface User {
   id: string;
@@ -38,7 +40,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const token = await AsyncStorage.getItem('token');
       if (token) {
-        // كان /api/auth/me → شلنا /api
         const data = await apiCall('/auth/me');
         setUser(data.user);
       }
@@ -50,31 +51,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   async function login(email: string, password: string): Promise<User> {
-    // كان /api/auth/login → شلنا /api
-    const data = await apiCall('/auth/login', {
-      method: 'POST',
-      body: JSON.stringify({ email, password }),
-    });
+    const cred = await signInWithEmailAndPassword(auth, email, password);
+    const idToken = await cred.user.getIdToken(true);
 
-    await AsyncStorage.setItem('token', data.token);
-    if (data.refresh_token) {
-      await AsyncStorage.setItem('refresh_token', data.refresh_token);
-    }
+    await AsyncStorage.setItem('token', idToken);
+
+    const data = await apiCall('/auth/me');
     setUser(data.user);
     return data.user;
   }
 
   async function register(regData: { email: string; university_id: string; name: string; password: string }): Promise<User> {
-    // كان /api/auth/register → شلنا /api
+    const cred = await createUserWithEmailAndPassword(auth, regData.email, regData.password);
+    const idToken = await cred.user.getIdToken(true);
+
+    await AsyncStorage.setItem('token', idToken);
+
     const data = await apiCall('/auth/register', {
       method: 'POST',
       body: JSON.stringify(regData),
     });
 
-    await AsyncStorage.setItem('token', data.token);
-    if (data.refresh_token) {
-      await AsyncStorage.setItem('refresh_token', data.refresh_token);
-    }
     setUser(data.user);
     return data.user;
   }
@@ -87,7 +84,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   async function refreshUser() {
     try {
-      // كان /api/auth/me → شلنا /api
       const data = await apiCall('/auth/me');
       setUser(data.user);
     } catch {}
