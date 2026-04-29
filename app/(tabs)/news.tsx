@@ -652,3 +652,151 @@ function renderReactions(item: NewsItem) {
       </View>
     );
   }
+
+if (loading)
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" color={Colors.accent} />
+      </View>
+    );
+
+  return (
+    <View style={styles.container} testID="news-tab">
+      <FlatList
+        data={news}
+        keyExtractor={item => item.id}
+        renderItem={renderNewsItem}
+        contentContainerStyle={styles.listContent}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={() => {
+              setRefreshing(true);
+              fetchNews();
+            }}
+            tintColor={Colors.accent}
+          />
+        }
+        ListHeaderComponent={
+          isAdmin ? (
+            <TouchableOpacity
+              testID="create-news-btn"
+              style={styles.createBtn}
+              onPress={() => router.push('/admin/create-news' as any)}
+            >
+              <Ionicons name="add-circle" size={20} color="#FFF" />
+              <Text style={styles.createBtnText}>
+                {' '}
+                {t('createNews', lang)}
+              </Text>
+            </TouchableOpacity>
+          ) : null
+        }
+        ListEmptyComponent={
+          <Text style={styles.emptyText}>No news yet</Text>
+        }
+      />
+
+      {/* Edit Modal */}
+      <Modal
+        visible={editModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setEditModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Edit Post</Text>
+
+            <TextInput
+              testID="edit-news-title"
+              style={styles.modalInput}
+              value={editTitle}
+              onChangeText={setEditTitle}
+              placeholder="Title"
+              placeholderTextColor={Colors.textSecondary}
+            />
+
+            <TextInput
+              testID="edit-news-content"
+              style={[styles.modalInput, { minHeight: 100 }]}
+              value={editContent}
+              onChangeText={setEditContent}
+              placeholder="Content"
+              multiline
+              placeholderTextColor={Colors.textSecondary}
+            />
+
+            <View style={styles.modalBtns}>
+              <TouchableOpacity
+                style={styles.cancelBtn}
+                onPress={() => setEditModal(false)}
+              >
+                <Text style={styles.cancelText}>Cancel</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                testID="save-edit-news"
+                style={styles.saveBtn}
+                onPress={handleSaveEdit}
+              >
+                <Text style={styles.saveText}>Save</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Quiz Results Modal */}
+      <Modal
+        visible={!!quizResultsModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setQuizResultsModal(null)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Quiz Results</Text>
+
+            <ScrollView style={{ maxHeight: 400 }}>
+              {quizResultsModal?.results?.length === 0 && (
+                <Text style={styles.emptyText}>No submissions yet</Text>
+              )}
+
+              {quizResultsModal?.results?.map(
+                (r: any, i: number) => (
+                  <View key={i} style={styles.resultRow}>
+                    <Text style={styles.resultName}>
+                      {r.user_name}
+                    </Text>
+
+                    <Text
+                      style={[
+                        styles.resultScore,
+                        {
+                          color:
+                            r.score >= 50
+                              ? Colors.success
+                              : Colors.error
+                        }
+                      ]}
+                    >
+                      {r.score}% ({r.correct_count}/{r.total})
+                    </Text>
+                  </View>
+                )
+              )}
+            </ScrollView>
+
+            <TouchableOpacity
+              style={styles.saveBtn}
+              onPress={() => setQuizResultsModal(null)}
+            >
+              <Text style={styles.saveText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+    </View>
+  );
+}
