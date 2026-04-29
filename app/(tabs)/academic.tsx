@@ -411,3 +411,5 @@ const styles = StyleSheet.create({
   backgroundColor: Colors.primary,
   alignItems: 'center',
 },
+});
+  
