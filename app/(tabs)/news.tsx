@@ -85,6 +85,7 @@ async function handleReact(newsId: string, emoji: string) {
             : n
         )
       );
+      await AsyncStorage.setItem("news", JSON.stringify(data.news));
     } catch (e) {
       console.log(e);
     }
