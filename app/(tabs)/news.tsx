@@ -1010,4 +1010,11 @@ const styles = StyleSheet.create({
 
   commentField: { flex: 1, fontSize: 14, color: Colors.textPrimary },
 
-  sendBtn:               
+  sendBtn: {
+  width: 40,
+  height: 40,
+  borderRadius: 20,
+  alignItems: 'center',
+  justifyContent: 'center',
+  backgroundColor: Colors.background,
+},              
