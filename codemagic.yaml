@@ -5,7 +5,7 @@ workflows:
     triggering:
       events:
         - push
-      branch:
+      branch_filter:
         include_patterns:
           - main
     environment:
