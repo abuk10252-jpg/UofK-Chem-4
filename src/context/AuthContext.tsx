@@ -3,9 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { apiCall } from '../utils/api';
 
 import { auth } from "../firebase";
-import { onAuthStateChanged } from "firebase/auth";
-
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
+import { onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
 
 export interface User {
   id: string;
