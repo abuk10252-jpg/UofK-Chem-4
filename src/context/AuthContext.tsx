@@ -1,6 +1,6 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { apiCall } from '../utils/api';
+import { apiCall, apiPost } from '../utils/api';
 
 import { auth } from "../firebase";
 import { 
@@ -40,30 +40,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     loadStoredUser();
   }, []);
 
-  // 🔥 تحميل المستخدم من التخزين (Offline Mode)
+  /**
+   * 🔥 تحميل المستخدم من التخزين (Offline Mode)
+   * يحاول تحميل المستخدم المحفوظ أولاً
+   * ثم يحاول تحديث البيانات من السيرفر
+   */
   async function loadStoredUser() {
     try {
       const savedUser = await AsyncStorage.getItem("user");
       const savedToken = await AsyncStorage.getItem("token");
 
-      // تشغيل التطبيق بدون نت
+      // ✅ تشغيل التطبيق بدون نت باستخدام البيانات المحفوظة
       if (savedUser && savedToken) {
         try {
-          setUser(JSON.parse(savedUser));
+          const parsedUser = JSON.parse(savedUser);
+          setUser(parsedUser);
         } catch {
           await AsyncStorage.removeItem("user");
+          await AsyncStorage.removeItem("token");
         }
       }
 
-      // محاولة تحديث البيانات من السيرفر
+      // ✅ محاولة تحديث البيانات من السيرفر
       try {
         const data = await apiCall("/auth/me");
         if (data?.user) {
           setUser(data.user);
           await AsyncStorage.setItem("user", JSON.stringify(data.user));
         }
-      } catch {
-        // السيرفر واقع → تجاهل بدون كراش
+      } catch (error) {
+        // 🚨 السيرفر واقع أو لا يوجد اتصال → تجاهل بدون كراش
+        console.warn("Could not refresh user data from server:", error);
       }
 
     } finally {
@@ -71,71 +78,96 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  // 🔥 تسجيل الدخول
+  /**
+   * 🔥 تسجيل الدخول
+   */
   async function login(email: string, password: string): Promise<User> {
-    // تسجيل الدخول من Firebase
-    const cred = await signInWithEmailAndPassword(auth, email, password);
-
-    // الحصول على ID Token الحقيقي
-    const idToken = await cred.user.getIdToken(true);
-    await AsyncStorage.setItem("token", idToken);
-
-    // جلب بيانات المستخدم من السيرفر
-    let data = null;
     try {
-      data = await apiCall('/auth/me');
-    } catch {
-      throw new Error("Server error while fetching user data");
+      // ✅ تسجيل الدخول من Firebase
+      const cred = await signInWithEmailAndPassword(auth, email, password);
+
+      // ✅ الحصول على ID Token الحقيقي
+      const idToken = await cred.user.getIdToken(true);
+      await AsyncStorage.setItem("token", idToken);
+
+      // ✅ جلب بيانات المستخدم من السيرفر
+      const data = await apiCall('/auth/me');
+
+      if (!data?.user) {
+        throw new Error("Invalid user data from server");
+      }
+
+      setUser(data.user);
+      await AsyncStorage.setItem("user", JSON.stringify(data.user));
+
+      return data.user;
+
+    } catch (error) {
+      console.error("Login Error:", error);
+      throw error;
     }
-
-    if (!data?.user) {
-      throw new Error("Invalid user data from server");
-    }
-
-    setUser(data.user);
-    await AsyncStorage.setItem("user", JSON.stringify(data.user));
-
-    return data.user;
   }
 
-  // 🔥 تسجيل حساب جديد
-  async function register(regData: { email: string; university_id: string; name: string; password: string }): Promise<User> {
-    // إنشاء حساب في Firebase
-    const cred = await createUserWithEmailAndPassword(auth, regData.email, regData.password);
-
-    // الحصول على ID Token الحقيقي
-    const idToken = await cred.user.getIdToken(true);
-    await AsyncStorage.setItem("token", idToken);
-
-    // إرسال بيانات المستخدم للسيرفر
-    let data = null;
+  /**
+   * 🔥 تسجيل حساب جديد
+   */
+  async function register(regData: { 
+    email: string; 
+    university_id: string; 
+    name: string; 
+    password: string 
+  }): Promise<User> {
     try {
-      data = await apiCall('/auth/register', {
-        method: 'POST',
-        body: JSON.stringify(regData),
+      // ✅ إنشاء حساب في Firebase
+      const cred = await createUserWithEmailAndPassword(
+        auth, 
+        regData.email, 
+        regData.password
+      );
+
+      // ✅ الحصول على ID Token الحقيقي
+      const idToken = await cred.user.getIdToken(true);
+      await AsyncStorage.setItem("token", idToken);
+
+      // ✅ إرسال بيانات المستخدم للسيرفر
+      const data = await apiPost('/auth/register', {
+        email: regData.email,
+        university_id: regData.university_id,
+        name: regData.name,
       });
-    } catch {
-      throw new Error("Server error while creating user");
+
+      if (!data?.user) {
+        throw new Error("Invalid user data from server");
+      }
+
+      setUser(data.user);
+      await AsyncStorage.setItem("user", JSON.stringify(data.user));
+
+      return data.user;
+
+    } catch (error) {
+      console.error("Register Error:", error);
+      throw error;
     }
-
-    if (!data?.user) {
-      throw new Error("Invalid user data from server");
-    }
-
-    setUser(data.user);
-    await AsyncStorage.setItem("user", JSON.stringify(data.user));
-
-    return data.user;
   }
 
-  // 🔥 تسجيل الخروج
+  /**
+   * 🔥 تسجيل الخروج
+   */
   async function logout() {
-    await AsyncStorage.removeItem("token");
-    await AsyncStorage.removeItem("user");
-    setUser(null);
+    try {
+      await AsyncStorage.removeItem("token");
+      await AsyncStorage.removeItem("user");
+      setUser(null);
+    } catch (error) {
+      console.error("Logout Error:", error);
+      throw error;
+    }
   }
 
-  // 🔥 تحديث بيانات المستخدم
+  /**
+   * 🔥 تحديث بيانات المستخدم
+   */
   async function refreshUser() {
     try {
       const data = await apiCall('/auth/me');
@@ -143,13 +175,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(data.user);
         await AsyncStorage.setItem("user", JSON.stringify(data.user));
       }
-    } catch {
+    } catch (error) {
+      console.warn("Could not refresh user data:", error);
       // تجاهل بدون كراش
     }
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, refreshUser, setUser }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      loading, 
+      login, 
+      register, 
+      logout, 
+      refreshUser, 
+      setUser 
+    }}>
       {children}
     </AuthContext.Provider>
   );
