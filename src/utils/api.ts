@@ -1,104 +1,96 @@
+import Constants from 'expo-constants';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NetInfo from '@react-native-community/netinfo';
 
-const BASE_URL = process.env.EXPO_PUBLIC_API_URL;
+// 🔥 الحصول على الـ BASE_URL من app.json
+const BASE_URL = Constants.expoConfig?.extra?.API_URL;
 
 if (!BASE_URL) {
-  console.error("❌ ERROR: EXPO_PUBLIC_API_URL is missing");
+  console.error("❌ ERROR: API_URL not configured in app.json");
 }
 
-export async function apiCall(endpoint: string, options: RequestInit = {}) {
-  // -----------------------------
-  // 🌐 فحص حالة الإنترنت
-  // -----------------------------
-  let isOnline = true;
-
+/**
+ * دالة عامة لجميع API calls
+ * @param endpoint - المسار (مثال: /auth/me)
+ * @param options - خيارات fetch إضافية
+ */
+export async function apiCall(
+  endpoint: string,
+  options: RequestInit = {}
+): Promise<any> {
   try {
-    const net = await NetInfo.fetch();
-    isOnline = net.isConnected === true;
-  } catch {
-    isOnline = true;
-  }
-
-  // -----------------------------
-  // 📴 OFFLINE MODE
-  // -----------------------------
-  if (!isOnline) {
-    if (endpoint.includes('/news')) {
-      const cached = await AsyncStorage.getItem('news');
-      return { news: cached ? JSON.parse(cached) : [] };
+    // ✅ التحقق من الاتصال بالإنترنت
+    const netInfo = await NetInfo.fetch();
+    if (!netInfo.isConnected) {
+      throw new Error("No internet connection");
     }
 
-    if (endpoint.includes('/courses')) {
-      const cached = await AsyncStorage.getItem('courses');
-      return { courses: cached ? JSON.parse(cached) : [] };
+    // ✅ الحصول على التوكن من التخزين
+    const token = await AsyncStorage.getItem("token");
+
+    // ✅ تجهيز الـ Headers
+    const headers = {
+      "Content-Type": "application/json",
+      ...options.headers,
+    };
+
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
     }
 
-    if (endpoint.includes('/notifications')) {
-      const cached = await AsyncStorage.getItem('notifications');
-      return { notifications: cached ? JSON.parse(cached) : [] };
-    }
-
-    return { offline: true };
-  }
-
-  // -----------------------------
-  // 🌐 ONLINE MODE
-  // -----------------------------
-  const token = await AsyncStorage.getItem('token');
-
-  const headers: Record<string, string> = {
-    ...(options.headers as Record<string, string>),
-  };
-
-  if (!(options.body instanceof FormData)) {
-    headers['Content-Type'] = 'application/json';
-  }
-
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
-  }
-
-  let response;
-  try {
-    response = await fetch(`${BASE_URL}${endpoint}`, {
+    // ✅ عمل الـ Request
+    const response = await fetch(`${BASE_URL}${endpoint}`, {
       ...options,
       headers,
     });
-  } catch (e) {
-    throw new Error("Network error. Please try again.");
+
+    // ✅ التحقق من حالة الـ Response
+    if (!response.ok) {
+      const error = await response.text();
+      console.error(`API Error: ${response.status}`, error);
+      throw new Error(`API Error: ${response.status}`);
+    }
+
+    // ✅ تحويل الـ Response إلى JSON
+    const data = await response.json();
+    return data;
+
+  } catch (error) {
+    console.error(`API Call Error on ${endpoint}:`, error);
+    throw error;
   }
+}
 
-  let data = null;
+/**
+ * دالة للـ GET requests
+ */
+export async function apiGet(endpoint: string): Promise<any> {
+  return apiCall(endpoint, { method: 'GET' });
+}
 
-  try {
-    data = await response.json();
-  } catch {
-    data = null;
-  }
+/**
+ * دالة للـ POST requests
+ */
+export async function apiPost(endpoint: string, body: any): Promise<any> {
+  return apiCall(endpoint, {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+}
 
-  // -----------------------------
-  // ❗ معالجة الأخطاء
-  // -----------------------------
-  if (!response.ok) {
-    const detail = data?.error || "Server error";
-    throw new Error(detail);
-  }
+/**
+ * دالة للـ PUT requests
+ */
+export async function apiPut(endpoint: string, body: any): Promise<any> {
+  return apiCall(endpoint, {
+    method: 'PUT',
+    body: JSON.stringify(body),
+  });
+}
 
-  // -----------------------------
-  // 💾 تخزين البيانات للأوفلاين
-  // -----------------------------
-  if (endpoint.includes('/news') && data?.news) {
-    await AsyncStorage.setItem('news', JSON.stringify(data.news));
-  }
-
-  if (endpoint.includes('/courses') && data?.courses) {
-    await AsyncStorage.setItem('courses', JSON.stringify(data.courses));
-  }
-
-  if (endpoint.includes('/notifications') && data?.notifications) {
-    await AsyncStorage.setItem('notifications', JSON.stringify(data.notifications));
-  }
-
-  return data;
+/**
+ * دالة للـ DELETE requests
+ */
+export async function apiDelete(endpoint: string): Promise<any> {
+  return apiCall(endpoint, { method: 'DELETE' });
 }
