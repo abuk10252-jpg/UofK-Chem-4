@@ -3,7 +3,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { apiCall } from '../utils/api';
 
 import { auth } from "../firebase";
-import { onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
+import { 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword 
+} from "firebase/auth";
 
 export interface User {
   id: string;
@@ -43,11 +46,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const savedUser = await AsyncStorage.getItem("user");
       const savedToken = await AsyncStorage.getItem("token");
 
+      // تشغيل التطبيق بدون نت
       if (savedUser && savedToken) {
-        setUser(JSON.parse(savedUser)); // تشغيل التطبيق بدون نت
+        try {
+          setUser(JSON.parse(savedUser));
+        } catch {
+          await AsyncStorage.removeItem("user");
+        }
       }
 
-      // محاولة تحديث البيانات لو في نت
+      // محاولة تحديث البيانات من السيرفر
       try {
         const data = await apiCall("/auth/me");
         if (data?.user) {
@@ -55,7 +63,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           await AsyncStorage.setItem("user", JSON.stringify(data.user));
         }
       } catch {
-        // Offline → تجاهل
+        // السيرفر واقع → تجاهل بدون كراش
       }
 
     } finally {
@@ -65,15 +73,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // 🔥 تسجيل الدخول
   async function login(email: string, password: string): Promise<User> {
+    // تسجيل الدخول من Firebase
     const cred = await signInWithEmailAndPassword(auth, email, password);
-    const idToken = await cred.user.getIdToken(true);
 
+    // الحصول على ID Token الحقيقي
+    const idToken = await cred.user.getIdToken(true);
     await AsyncStorage.setItem("token", idToken);
 
-    const data = await apiCall('/auth/me');
-    setUser(data.user);
+    // جلب بيانات المستخدم من السيرفر
+    let data = null;
+    try {
+      data = await apiCall('/auth/me');
+    } catch {
+      throw new Error("Server error while fetching user data");
+    }
 
-    // تخزين المستخدم للأوفلاين
+    if (!data?.user) {
+      throw new Error("Invalid user data from server");
+    }
+
+    setUser(data.user);
     await AsyncStorage.setItem("user", JSON.stringify(data.user));
 
     return data.user;
@@ -81,19 +100,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // 🔥 تسجيل حساب جديد
   async function register(regData: { email: string; university_id: string; name: string; password: string }): Promise<User> {
+    // إنشاء حساب في Firebase
     const cred = await createUserWithEmailAndPassword(auth, regData.email, regData.password);
-    const idToken = await cred.user.getIdToken(true);
 
+    // الحصول على ID Token الحقيقي
+    const idToken = await cred.user.getIdToken(true);
     await AsyncStorage.setItem("token", idToken);
 
-    const data = await apiCall('/auth/register', {
-      method: 'POST',
-      body: JSON.stringify(regData),
-    });
+    // إرسال بيانات المستخدم للسيرفر
+    let data = null;
+    try {
+      data = await apiCall('/auth/register', {
+        method: 'POST',
+        body: JSON.stringify(regData),
+      });
+    } catch {
+      throw new Error("Server error while creating user");
+    }
+
+    if (!data?.user) {
+      throw new Error("Invalid user data from server");
+    }
 
     setUser(data.user);
-
-    // تخزين المستخدم للأوفلاين
     await AsyncStorage.setItem("user", JSON.stringify(data.user));
 
     return data.user;
@@ -114,7 +143,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(data.user);
         await AsyncStorage.setItem("user", JSON.stringify(data.user));
       }
-    } catch {}
+    } catch {
+      // تجاهل بدون كراش
+    }
   }
 
   return (
