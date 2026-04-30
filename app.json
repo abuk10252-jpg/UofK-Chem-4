@@ -50,7 +50,7 @@
     "owner": "abuk10252",
 
     "extra": {
-      "API_URL": process.env.EXPO_PUBLIC_API_URL,
+      "API_URL": "https://server-2-xpsh.onrender.com/api",
       "router": {},
       "eas": {
         "projectId": "ca275e07-9272-47b3-b91e-ee8a62e9a560"
