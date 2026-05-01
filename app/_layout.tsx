@@ -1,12 +1,11 @@
 import { Stack } from 'expo-router';
-import { AuthProvider, useAuth } from '../src/context/AuthContext';
+import { AuthProvider } from '../src/context/AuthContext';
 import { StatusBar } from 'expo-status-bar';
 import LoadingScreen from '../src/components/LoadingScreen';
 
 function LayoutContent() {
-  const { loading } = useAuth();
+  const { loading } = useAuth();   // هذا الـ hook لازم يكون داخل الـ Provider
 
-  // 🔥 عرض شاشة اللودنغ أثناء تحميل المستخدم
   if (loading) {
     return <LoadingScreen />;
   }
@@ -18,20 +17,17 @@ function LayoutContent() {
       <Stack.Screen name="register" />
       <Stack.Screen name="pending" />
       <Stack.Screen name="(tabs)" />
-
-      {/* Admin Dashboard */}
       <Stack.Screen name="admin" />
-
-      {/* Super Admin Dashboard */}
       <Stack.Screen name="super-admin" />
-
-      {/* Admin tools */}
       <Stack.Screen name="admin/users" />
       <Stack.Screen name="admin/create-course" />
       <Stack.Screen name="admin/create-news" />
     </Stack>
   );
 }
+
+// 🔥 يجب استيراد useAuth هنا
+import { useAuth } from '../src/context/AuthContext';
 
 export default function RootLayout() {
   return (
