@@ -1,10 +1,11 @@
 import { Stack } from 'expo-router';
 import { AuthProvider } from '../src/context/AuthContext';
+import { useAuth } from '../src/context/AuthContext';     // ← هذي الملاحظة المهمة
 import { StatusBar } from 'expo-status-bar';
 import LoadingScreen from '../src/components/LoadingScreen';
 
 function LayoutContent() {
-  const { loading } = useAuth();   // هذا الـ hook لازم يكون داخل الـ Provider
+  const { loading } = useAuth();   // استخدام الـ hook
 
   if (loading) {
     return <LoadingScreen />;
@@ -25,9 +26,6 @@ function LayoutContent() {
     </Stack>
   );
 }
-
-// 🔥 يجب استيراد useAuth هنا
-import { useAuth } from '../src/context/AuthContext';
 
 export default function RootLayout() {
   return (
