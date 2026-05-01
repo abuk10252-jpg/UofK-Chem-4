@@ -1,15 +1,24 @@
-import { initializeApp } from "firebase/app";
+import { initializeApp, getApps } from "firebase/app";
 import { getAuth } from "firebase/auth";
 
 const firebaseConfig = {
-  apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID,
+  apiKey: "AIzaSyBBq6jJ_25f6zPAxKPZew_kh-4UFAQLIEM",
+  authDomain: "uofk-chem.firebaseapp.com",
+  projectId: "uofk-chem",
+  storageBucket: "uofk-chem.firebasestorage.app",
+  messagingSenderId: "647909218035",
+  appId: "1:647909218035:web:6838d2e4e6508c60b44986",
 };
 
-const app = initializeApp(firebaseConfig);
+// 🔥 تهيئة Firebase بشكل آمن
+let app;
+if (getApps().length === 0) {
+  app = initializeApp(firebaseConfig);
+} else {
+  app = getApps()[0];
+}
 
 export const auth = getAuth(app);
+
+// للتتبع في الـ console
+console.log("✅ Firebase initialized successfully with project:", firebaseConfig.projectId);
