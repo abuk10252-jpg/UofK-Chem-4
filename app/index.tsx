@@ -8,27 +8,35 @@ export default function Index() {
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading) {
-      if (!user) {
-        router.replace('/login');
-      } 
-      else if (user.status === 'pending') {
-        router.replace('/pending');
-      } 
-      else if (user.status === 'rejected') {
-        router.replace('/login');
-      } 
-      else if (user.role === 'super_admin') {
-        router.replace('/super-admin');
-      }
-      else if (user.role === 'admin') {
-        router.replace('/admin');
-      }
-      else {
-        router.replace('/(tabs)/academic');
-      }
+    if (loading) return;
+
+    console.log("INDEX SCREEN → loading finished");
+
+    if (!user) {
+      console.log("INDEX → Redirect to /login");
+      router.replace('/login');
+    } 
+    else if (user.status === 'pending') {
+      console.log("INDEX → Redirect to /pending");
+      router.replace('/pending');
+    } 
+    else if (user.status === 'rejected') {
+      console.log("INDEX → Redirect to /login (rejected)");
+      router.replace('/login');
+    } 
+    else if (user.role === 'super_admin') {
+      console.log("INDEX → Redirect to /super-admin");
+      router.replace('/super-admin');
     }
-  }, [user, loading]);
+    else if (user.role === 'admin') {
+      console.log("INDEX → Redirect to /admin");
+      router.replace('/admin');
+    }
+    else {
+      console.log("INDEX → Redirect to /(tabs)/academic");
+      router.replace('/(tabs)/academic');
+    }
+  }, [user, loading, router]);
 
   return (
     <View style={styles.container}>
