@@ -1,16 +1,29 @@
 import { Stack } from 'expo-router';
-import { AuthProvider } from '../src/context/AuthContext';
-import { useAuth } from '../src/context/AuthContext';     // ← هذي الملاحظة المهمة
+import { useEffect } from 'react';
+import { AuthProvider, useAuth } from '../src/context/AuthContext';
 import { StatusBar } from 'expo-status-bar';
 import LoadingScreen from '../src/components/LoadingScreen';
+import * as SplashScreen from 'expo-splash-screen';
 
-function LayoutContent() {
-  const { loading } = useAuth();   // استخدام الـ hook
+// منع إخفاء السبلاش تلقائياً لحد ما نجهز كل شيء
+SplashScreen.preventAutoHideAsync();
 
+function RootLayoutNav() {
+  const { loading } = useAuth();
+
+  // إخفاء السبلاش لما يخلص التحميل
+  useEffect(() => {
+    if (!loading) {
+      SplashScreen.hideAsync().catch(console.error);
+    }
+  }, [loading]);
+
+  // عرض شاشة التحميل
   if (loading) {
     return <LoadingScreen />;
   }
 
+  // التنقل الرئيسي
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="index" />
@@ -31,7 +44,7 @@ export default function RootLayout() {
   return (
     <AuthProvider>
       <StatusBar style="light" />
-      <LayoutContent />
+      <RootLayoutNav />
     </AuthProvider>
   );
 }
