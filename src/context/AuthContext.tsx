@@ -41,16 +41,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   /**
-   * 🔥 تحميل المستخدم من التخزين (Offline Mode)
-   * يحاول تحميل المستخدم المحفوظ أولاً
-   * ثم يحاول تحديث البيانات من السيرفر
+   * 🔥 تحميل المستخدم من التخزين + Offline Mode
    */
   async function loadStoredUser() {
     try {
       const savedUser = await AsyncStorage.getItem("user");
       const savedToken = await AsyncStorage.getItem("token");
 
-      // ✅ تشغيل التطبيق بدون نت باستخدام البيانات المحفوظة
+      // 🔥 تشغيل Offline Mode بدون أي API Call
       if (savedUser && savedToken) {
         try {
           const parsedUser = JSON.parse(savedUser);
@@ -61,18 +59,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       }
 
-      // ✅ محاولة تحديث البيانات من السيرفر
+      // 🔥 ما تعمل أي API Call لو ما في Token
+      if (!savedToken) {
+        setLoading(false);
+        return;
+      }
+
+      // 🔥 تحديث البيانات من السيرفر فقط لو في Token صالح
       try {
         const data = await apiCall("/auth/me");
+
         if (data?.user) {
           setUser(data.user);
           await AsyncStorage.setItem("user", JSON.stringify(data.user));
         }
       } catch (error) {
-        // 🚨 السيرفر واقع أو لا يوجد اتصال → تجاهل بدون كراش
         console.warn("Could not refresh user data from server:", error);
       }
 
+    } catch (error) {
+      console.error("loadStoredUser Crash:", error);
     } finally {
       setLoading(false);
     }
@@ -83,14 +89,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
    */
   async function login(email: string, password: string): Promise<User> {
     try {
-      // ✅ تسجيل الدخول من Firebase
       const cred = await signInWithEmailAndPassword(auth, email, password);
 
-      // ✅ الحصول على ID Token الحقيقي
       const idToken = await cred.user.getIdToken(true);
       await AsyncStorage.setItem("token", idToken);
 
-      // ✅ جلب بيانات المستخدم من السيرفر
       const data = await apiCall('/auth/me');
 
       if (!data?.user) {
@@ -118,18 +121,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     password: string 
   }): Promise<User> {
     try {
-      // ✅ إنشاء حساب في Firebase
       const cred = await createUserWithEmailAndPassword(
         auth, 
         regData.email, 
         regData.password
       );
 
-      // ✅ الحصول على ID Token الحقيقي
       const idToken = await cred.user.getIdToken(true);
       await AsyncStorage.setItem("token", idToken);
 
-      // ✅ إرسال بيانات المستخدم للسيرفر
       const data = await apiPost('/auth/register', {
         email: regData.email,
         university_id: regData.university_id,
@@ -177,7 +177,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     } catch (error) {
       console.warn("Could not refresh user data:", error);
-      // تجاهل بدون كراش
     }
   }
 
