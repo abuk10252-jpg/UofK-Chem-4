@@ -3,75 +3,77 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import NetInfo from '@react-native-community/netinfo';
 
 // 🔥 الحصول على الـ BASE_URL من app.json
-const BASE_URL = Constants.expoConfig?.extra?.API_URL;
+const BASE_URL = Constants.expoConfig?.extra?.API_URL || "";
 
 if (!BASE_URL) {
-  console.error("❌ ERROR: API_URL not configured in app.json");
+  console.warn("⚠️ WARNING: API_URL is missing in app.json");
 }
 
 /**
  * دالة عامة لجميع API calls
- * @param endpoint - المسار (مثال: /auth/me)
- * @param options - خيارات fetch إضافية
  */
 export async function apiCall(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<any> {
   try {
-    // ✅ التحقق من الاتصال بالإنترنت
+    // 🔥 التحقق من الاتصال بالإنترنت
     const netInfo = await NetInfo.fetch();
     if (!netInfo.isConnected) {
-      throw new Error("No internet connection");
+      // ❗ لا ترمي Error — رجّع null عشان ما يحصل Crash
+      return { offline: true };
     }
 
-    // ✅ الحصول على التوكن من التخزين
+    // 🔥 الحصول على التوكن
     const token = await AsyncStorage.getItem("token");
 
-    // ✅ تجهيز الـ Headers
-    const headers = {
+    // 🔥 تجهيز الـ Headers
+    const headers: Record<string, string> = {
       "Content-Type": "application/json",
-      ...options.headers,
+      ...(options.headers as any),
     };
 
     if (token) {
       headers["Authorization"] = `Bearer ${token}`;
     }
 
-    // ✅ عمل الـ Request
+    // 🔥 إرسال الطلب
     const response = await fetch(`${BASE_URL}${endpoint}`, {
       ...options,
       headers,
     });
 
-    // ✅ التحقق من حالة الـ Response
+    // 🔥 التحقق من حالة الـ Response
     if (!response.ok) {
-      const error = await response.text();
-      console.error(`API Error: ${response.status}`, error);
-      throw new Error(`API Error: ${response.status}`);
+      const text = await response.text();
+      console.warn(`API Error ${response.status}:`, text);
+      return null; // ❗ لا ترمي Error
     }
 
-    // ✅ تحويل الـ Response إلى JSON
-    const data = await response.json();
-    return data;
+    // 🔥 تحويل JSON
+    try {
+      return await response.json();
+    } catch {
+      return null;
+    }
 
   } catch (error) {
-    console.error(`API Call Error on ${endpoint}:`, error);
-    throw error;
+    console.warn(`API Call Error on ${endpoint}:`, error);
+    return null; // ❗ لا ترمي Error
   }
 }
 
 /**
- * دالة للـ GET requests
+ * GET
  */
-export async function apiGet(endpoint: string): Promise<any> {
+export async function apiGet(endpoint: string) {
   return apiCall(endpoint, { method: 'GET' });
 }
 
 /**
- * دالة للـ POST requests
+ * POST
  */
-export async function apiPost(endpoint: string, body: any): Promise<any> {
+export async function apiPost(endpoint: string, body: any) {
   return apiCall(endpoint, {
     method: 'POST',
     body: JSON.stringify(body),
@@ -79,9 +81,9 @@ export async function apiPost(endpoint: string, body: any): Promise<any> {
 }
 
 /**
- * دالة للـ PUT requests
+ * PUT
  */
-export async function apiPut(endpoint: string, body: any): Promise<any> {
+export async function apiPut(endpoint: string, body: any) {
   return apiCall(endpoint, {
     method: 'PUT',
     body: JSON.stringify(body),
@@ -89,8 +91,8 @@ export async function apiPut(endpoint: string, body: any): Promise<any> {
 }
 
 /**
- * دالة للـ DELETE requests
+ * DELETE
  */
-export async function apiDelete(endpoint: string): Promise<any> {
+export async function apiDelete(endpoint: string) {
   return apiCall(endpoint, { method: 'DELETE' });
 }
